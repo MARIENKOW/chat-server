@@ -42,10 +42,15 @@ class Controller {
          const clientError = {
             badValidation: false,
             notUniqueEmail: false,
+            notUniqueUsername: false,
          }
-         const { username, email, password, ['re-enter password']: rePassword } = req.body;
+         const { username,name, email, password, ['re-enter password']: rePassword } = req.body;
 
-         if (!username || !email || !password || !rePassword || password !== rePassword) return res.status(400).json({ ...clientError, badValidation: true })
+         if (!username || !email || !password || !rePassword || !name || password !== rePassword) return res.status(400).json({ ...clientError, badValidation: true })
+
+         const [rezultUsername] = await DB.query(`SELECT username from user where username = '${username}'`)
+
+         if (rezultUsername.length > 0) return res.status(400).json({ ...clientError, notUniqueUsername: true })
 
          const [rezult] = await DB.query(`SELECT email from user where email = '${email}'`)
 
@@ -55,11 +60,11 @@ class Controller {
          const activationLink = v4();
          await mailService.sendMessage(email, `${process.env.API_URL}/activate/${activationLink}`)
 
-         const [info] = await DB.query(`INSERT INTO user VALUES (NULL, '${username}', '${email}', '${hashPassword}', '${activationLink}', NULL , false);`)
+         const [info] = await DB.query(`INSERT INTO user VALUES (NULL, '${username}', '${email}', '${hashPassword}','${name}', '${activationLink}', NULL , false);`)
          const tokens = token.generateTokens({ id: info.insertId, email })
          await token.saveToken(info.insertId, tokens.refreshToken);
          // res.cookie('refreshToken', tokens.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
-         res.status(200).json(true)
+         res.status(200).json(email)
       } catch (e) {
          res.status(500).json(e.message)
       }
@@ -137,7 +142,7 @@ class Controller {
 
          const response = await DB.query(`INSERT into rememberPass values (null,'${rememberPassLink}','${user_id}',TIMESTAMPADD(MINUTE,30,NOW()))`)
          mailService.sendMessage(rezult[0].email, `${process.env.CLIENT_URL}/ChangePass/${rememberPassLink}`, 'change')
-         return res.json(response)
+         return res.json(rezult[0].email)
       } catch (e) {
          res.status(500).json(e.message)
       }

@@ -22,7 +22,7 @@ class MailService {
          <h1>For activation tap on link</h1>
          <a href='${link}'>${link}</a>
       </div>`}
-      const inner = obj = 'change'? change : activate
+      const inner = obj === 'change'? change : activate
       await this.transporter.sendMail({
          from: process.env.SMTP_USER,
          to: email,
