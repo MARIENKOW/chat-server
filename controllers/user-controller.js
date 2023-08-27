@@ -44,11 +44,11 @@ class Controller {
             notUniqueEmail: false,
             notUniqueUsername: false,
          }
-         const { username,name, email, password, ['re-enter password']: rePassword } = req.body;
+         const { username, name, email, password, ['re-enter password']: rePassword } = req.body;
 
          if (!username || !email || !password || !rePassword || !name || password !== rePassword) return res.status(400).json({ ...clientError, badValidation: true })
 
-         const [rezultUsername] = await DB.query(`SELECT username from user where username = '${username}'`)
+         const [rezultUsername] = await DB.query(`SELECT username from user where BINARY username = '${username}'`)
 
          if (rezultUsername.length > 0) return res.status(400).json({ ...clientError, notUniqueUsername: true })
 
@@ -110,24 +110,20 @@ class Controller {
          res.status(500).json(e.message)
       }
    }
-   aboutUser = async (req, res, next) => {
+
+   aboutUser = async (req, res) => {
       try {
          const { refreshToken } = req.cookies
          if (!refreshToken) return res.status(401).json('not Authorization')
-         const [aboutUser] = await DB.query(`SELECT * from user where refreshToken = '${refreshToken}'`);
-         return res.json(aboutUser[0])
+         const userData = await token.findToken(refreshToken);
+         if (!userData) return res.status(401).json('not Authorization')
+         return res.json(userData)
       } catch (e) {
          res.status(500).json(e.message)
          console.log(e);
       }
    }
-   checkAuthUser = async (req, res) => {
-      try {
-         return res.json(true)
-      } catch (e) {
-         res.status(500).json(e.message)
-      }
-   }
+
    rememberPassword = async (req, res) => {
       try {
          const { email } = req.body;
@@ -163,9 +159,21 @@ class Controller {
       }
 
    }
+
    checkChangePassLink = async (req, res) => {
       try {
          return res.json(true)
+      } catch (e) {
+         res.status(500).json(e.message)
+      }
+   }
+
+   searchUsers = async (req, res) => {
+      try {
+         const { search, id } = req.body;
+         if (!search || search.length < 1) return res.status(400).json('not valid search')
+         const [response] = await DB.query(`SELECT username,name,id from user where username like '${search}%' and id not like '${id}' and isActivated = true`);
+         res.json(response);
       } catch (e) {
          res.status(500).json(e.message)
       }

@@ -13,8 +13,6 @@ router.post('/logOut', controller.logOut);
 
 router.get('/refresh', controller.refresh);
 
-router.get('/checkAuthUser', autUserMiddelware, controller.checkAuthUser);
-
 router.get('/activate/:activationLink', controller.activate);
 
 router.get('/aboutUser', autUserMiddelware, controller.aboutUser);
@@ -24,6 +22,9 @@ router.post('/rememberPassword', controller.rememberPassword);
 router.post('/changePass', changePassMiddleware, controller.changePass);
 
 router.post('/checkChangePassLink', changePassMiddleware, controller.checkChangePassLink);
+
+router.post('/user/searchUsers', autUserMiddelware, controller.searchUsers);
+
 
 
 
