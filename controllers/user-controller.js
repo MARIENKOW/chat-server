@@ -178,6 +178,25 @@ class Controller {
          res.status(500).json(e.message)
       }
    }
+   getDataUsers = async (req, res) => {
+      const { id } = req.body
+      function fromStrToObject(str) {
+         const arr = str.split(',')
+         const arr2 = arr.map((el) => {
+            const arr = el.split('|').map((el) => el.split(':'));
+            const obj = Object.fromEntries(arr);
+            return obj
+         })
+         return arr2
+      }
+      const [rez] = await DB.query(`Select allInfo.id,allInfo.username,GROUP_CONCAT(concat('value:',message.value,'|from:',message.from_id)) as message from message INNER JOIN (Select * from user INNER JOIN (SELECT structure.with_id,structure.chat_id from structure INNER JOIN user ON user.id = structure.user_id WHERE user.id = ${id}) as wh ON user.id = wh.with_id) as allInfo ON allInfo.chat_id = message.chat_id GROUP BY id;`);
+      const users = rez.map((el) => {
+
+         el.message = fromStrToObject(el.message);
+         return el;
+      })
+      res.status(200).json(users);
+   }
 }
 export default new Controller();
 

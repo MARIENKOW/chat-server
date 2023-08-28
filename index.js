@@ -37,9 +37,13 @@ io.use((socket, next) => {
 io.on('connection', (sock) => {
    sock.on("private message", ({ message, to }) => {
       sock.to(to).emit("private message", {
-         message,
-         from: sock.id,
+         message:{value:message,from: sock.id},
+         user:sock.id
       });
+      sock.emit("private message",{
+         message:{value:message,from: sock.id},
+         user:to
+      })
    });
 
    //! ///---ONLIN/Offline---\\\ !\\
