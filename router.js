@@ -26,7 +26,9 @@ router.post('/checkChangePassLink', changePassMiddleware, controller.checkChange
 
 router.post('/user/searchUsers', autUserMiddelware, controller.searchUsers);
 
-router.post('/user/getDataUsers', autUserMiddelware,controller.getDataUsers);
+router.post('/user/getDataUsers', autUserMiddelware, controller.getDataUsers);
+
+router.post('/user/getUserById', autUserMiddelware, controller.getUserById);
 
 
 
