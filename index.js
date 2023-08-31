@@ -40,21 +40,26 @@ io.on('connection', (sock) => {
          const now = new Date()
          const date = `${`${now.getDate()}`.length !== 1 ? now.getDate() : `0${now.getDate()}`}.${`${now.getMonth()}`.length !== 1 ? now.getMonth() : `0${now.getMonth()}`}.${now.getFullYear()}`;
          const time = `${`${now.getHours()}`.length !== 1 ? now.getHours() : `0${now.getHours()}`}:${`${now.getMinutes()}`.length !== 1 ? now.getMinutes() : `0${now.getMinutes()}`}:${`${now.getSeconds()}`.length !== 1 ? now.getSeconds() : `0${now.getSeconds()}`}`;
+         let id = null
          if (chat[0]) {
-            await DB.query(`INSERT into message VALUES(null,'${message}',${chat[0].chat_id},${sock.id},'${date}','${time}');`)
+            const [arr] = await DB.query(`INSERT into message VALUES(null,'${message}',${chat[0].chat_id},${sock.id},'${date}','${time}',false);`)
+            const { insertId: mess_id } = arr;
+            id = mess_id;
          } else {
             const [insertInfo] = await DB.query(`INSERT into chat values (null)`);
             const { insertId: chat_id } = insertInfo;
-            await DB.query(`INSERT into message VALUES(null,'${message}',${chat_id},${sock.id},'${date}','${time}');`)
+            const [arr] = await DB.query(`INSERT into message VALUES(null,'${message}',${chat_id},${sock.id},'${date}','${time}',false);`)
+            const { insertId: mess_id } = arr;
+            id = mess_id;
             await DB.query(`INSERT into structure values (null,${sock.id},${chat_id},${to}),(null,${to},${chat_id},${sock.id})`)
          }
          sock.to(to).emit("private message", {
-            message: { value: message, from: sock.id, date, time },
+            message: {id, value: message, from: sock.id, date, time,watched:false },
             user: sock.id
          });
 
          sock.emit("private message", {
-            message: { value: message, from: sock.id, date, time },
+            message: {id, value: message, from: sock.id, date, time ,watched:false},
             user: to
          })
       }

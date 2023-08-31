@@ -30,6 +30,8 @@ router.post('/user/getDataUsers', autUserMiddelware, controller.getDataUsers);
 
 router.post('/user/getUserById', autUserMiddelware, controller.getUserById);
 
+router.post('/user/addWatchedMessage', autUserMiddelware, controller.addWatchedMessage);
+
 
 
 

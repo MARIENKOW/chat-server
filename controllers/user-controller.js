@@ -194,21 +194,18 @@ class Controller {
             return arr2
          }
 
-         const [rez] = await DB.query(`Select allInfo.id,allInfo.username,message.value,message.from_id,message.id as message_id,message.date,message.time from message INNER JOIN (Select * from user INNER JOIN (SELECT structure.with_id,structure.chat_id from structure INNER JOIN user ON user.id = structure.user_id WHERE user.id = ${id}) as wh ON user.id = wh.with_id) as allInfo ON allInfo.chat_id = message.chat_id order BY message.id;`);
-         // const users = rez.map((el) => {
-         //    el.message = fromStrToObject(el.message).sort((a,b)=>a.id-b.id)
-         //    return el;
-         // })
+         const [rez] = await DB.query(`Select allInfo.id,allInfo.username,message.value,message.from_id,message.id as message_id,message.date,message.time,message.watched from message INNER JOIN (Select * from user INNER JOIN (SELECT structure.with_id,structure.chat_id from structure INNER JOIN user ON user.id = structure.user_id WHERE user.id = ${id}) as wh ON user.id = wh.with_id) as allInfo ON allInfo.chat_id = message.chat_id order BY message.id;`);
          const users = []
          for (let i = 0; i < rez.length; i++) {
             const usersHawThis = users.find((el) => el.id === rez[i].id);
             if (usersHawThis) {
                usersHawThis.message.push({
+                  id: rez[i].message_id,
                   value: rez[i].value,
                   from: rez[i].from_id,
                   date: rez[i].date,
                   time: rez[i].time,
-                  id: rez[i].message_id
+                  watched: rez[i].watched,
                })
             } else {
                users.push({
@@ -220,7 +217,8 @@ class Controller {
                         from: rez[i].from_id,
                         date: rez[i].date,
                         time: rez[i].time,
-                        id: rez[i].message_id
+                        id: rez[i].message_id,
+                        watched: rez[i].watched,
                      }
                   ]
                })
@@ -240,6 +238,20 @@ class Controller {
          if (!id) return res.status(400).json('not have Id')
          console.log(id);
          const [user] = await DB.query(`SELECT id,username,name from user where id = ${id}`);
+         res.status(200).json(user[0]);
+      } catch (e) {
+         console.log(e);
+         res.status(500).json(e.message);
+      }
+   }
+
+   addWatchedMessage = async (req, res) => {
+      try {
+         const { id } = req.body
+         if (!id) return res.status(400).json('not have Id')
+         console.log(id);
+         const values = `${id.join(',')}`;
+         await DB.query(`UPDATE message SET watched = true where id in ${values}`);
          res.status(200).json(user[0]);
       } catch (e) {
          console.log(e);
