@@ -23,7 +23,6 @@ class Controller {
          const isPassEquals = await bcrypt.compare(password, dbPass);
          if (!isPassEquals) return res.status(400).json({ ...clientError, passNotCorrect: true })
          if (!mailFromDB[0].isActivated) return res.status(400).json({ ...clientError, accNotActivated: true })
-         console.log('sdfsdf');
          const tokens = token.generateTokens({ id: mailFromDB[0].id, email })
          await token.saveToken(mailFromDB[0].id, tokens.refreshToken);
          await res.cookie('refreshToken', tokens.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
@@ -76,7 +75,6 @@ class Controller {
          const [user] = await DB.query(`SELECT id from user where activationLink = '${activationLink}'`);
          if (user.length === 0) return res.status(400).json('activation Link is not fined');
          const ans = await DB.query(`UPDATE user set isActivated = true where id = ${user[0].id}`);
-         // console.log(process.env.CLIENT_URL);
          res.redirect(process.env.CLIENT_URL)
       } catch (e) {
          res.status(500).json(e.message)
@@ -224,7 +222,6 @@ class Controller {
                })
             }
          }
-         // console.log(users);
 
          res.status(200).json(users);
       } catch (e) {
@@ -236,7 +233,6 @@ class Controller {
       try {
          const { id } = req.body
          if (!id) return res.status(400).json('not have Id')
-         console.log(id);
          const [user] = await DB.query(`SELECT id,username,name from user where id = ${id}`);
          res.status(200).json(user[0]);
       } catch (e) {
@@ -249,10 +245,9 @@ class Controller {
       try {
          const { id } = req.body
          if (!id) return res.status(400).json('not have Id')
-         console.log(id);
-         const values = `${id.join(',')}`;
+         const values = `(${id.join(',')})`;
          await DB.query(`UPDATE message SET watched = true where id in ${values}`);
-         res.status(200).json(user[0]);
+         res.status(200).json(true);
       } catch (e) {
          console.log(e);
          res.status(500).json(e.message);
