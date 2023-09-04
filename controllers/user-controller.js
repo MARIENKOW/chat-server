@@ -62,7 +62,6 @@ class Controller {
          const [info] = await DB.query(`INSERT INTO user VALUES (NULL, '${username}', '${email}', '${hashPassword}','${name}', '${activationLink}', NULL , false);`)
          const tokens = token.generateTokens({ id: info.insertId, email })
          await token.saveToken(info.insertId, tokens.refreshToken);
-         // res.cookie('refreshToken', tokens.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
          res.status(200).json(email)
       } catch (e) {
          res.status(500).json(e.message)
